@@ -1,6 +1,6 @@
 # CI/CD Demo
 
-This repository is a simple Node.js-based CI/CD demo that uses GitHub Actions, Docker, and a Docker Hub-style image push workflow.
+This repository is a simple Node.js-based CI/CD demo that uses GitHub Actions and a Docker Hub-style image push workflow.
 
 ## Project structure
 
@@ -8,10 +8,8 @@ This repository is a simple Node.js-based CI/CD demo that uses GitHub Actions, D
 - `src/calc.js` contains basic arithmetic functions.
 - `test/calc.test.js` contains tests for the arithmetic helpers.
 - `Dockerfile` builds a small Node.js runtime image.
-- `.github/workflows/ci.yml` runs the CI pipeline for source validation.
-- `.github/workflows/docker-ci.yml` builds and smokes the Docker image.
-- `.github/workflows/deploy.yml` runs a deployment job after a successful CI workflow.
-- `.github/workflows/docker-deploy.yml` demonstrates a Docker Hub login and image push workflow using GitHub secrets.
+- `.github/workflows/ci.yml` runs the CI pipeline for source validation and container smoke testing.
+- `.github/workflows/deploy.yml` runs the Docker image push workflow after a successful CI workflow or by manual trigger.
 
 ## Local commands
 
@@ -27,11 +25,9 @@ docker run --rm cicd-demo:latest
 
 ## GitHub Actions workflow
 
-The main CI workflow runs on pushes and pull requests to the `main` branch. It installs dependencies with `npm ci`, lints the code, executes tests, builds the project output, and uploads the generated `dist/demo-output.json` artifact for each tested Node version.
+The CI workflow runs on pushes and pull requests to the `main` branch. It installs dependencies with `npm ci`, lints the code, executes tests, builds the project output, builds the Docker image, runs a smoke test of the image, and uploads the generated `dist/demo-output.json` artifact for each tested Node version.
 
-The Docker workflow runs the same source validation and then builds a Docker image locally with `docker build`. It also runs a smoke test using `docker run`.
-
-The deployment workflows use `workflow_run` to trigger after a successful CI workflow result and also allow `workflow_dispatch` for manual deployment. In a real project it would deploy to a hosting provider or package registry. For the Docker example, the deployment workflow demonstrates a Docker Hub login and image push using GitHub repository secrets for both the username and the Docker Hub access token.
+The deployment workflow uses `workflow_run` to trigger after a successful CI workflow result and also allows `workflow_dispatch` for manual deployment. In a real project it would deploy to a hosting provider or package registry. For the Docker example, the deploy workflow demonstrates a Docker Hub login and image push using GitHub repository secrets for the username and Docker Hub access token.
 
 ### Docker Hub configuration
 
@@ -60,6 +56,10 @@ A CVE is a Common Vulnerabilities and Exposures record. It is a standard way to 
 
 Image security tools such as Docker Scout can scan a built container and point to the package versions and CVEs found in that image. This helps teams understand what is vulnerable and where it came from before the image is deployed.
 
+### Important: do not add real CVEs intentionally
+
+Do not add a known vulnerable package or a deliberately insecure code path to a real repository. In a teaching demo, you can show the impact by using a separate example branch or a lab-only environment, for example by intentionally pinning a package version that has a documented known issue. The safe learning pattern is to scan, explain, and then update the dependency to a fixed version.
+
 ### Optional: enable Docker Scout image analysis
 
 The GitHub Actions workflow can push the image to Docker Hub successfully, but the Docker Hub image analysis feature is a separate registry setting. In Docker Hub, go to the repository or namespace security settings and enable Docker Scout image analysis or the image security insights view. If the image security insight settings show `None`, then the registry has not enabled Scout scoring for that image.
@@ -68,15 +68,13 @@ The GitHub Actions workflow can push the image to Docker Hub successfully, but t
 
 1. A contributor opens a pull request or pushes code to `main`.
 2. GitHub Actions starts the `CI` workflow automatically.
-3. The workflow checks out the repository, sets up multiple Node.js versions, installs dependencies with `npm ci`, runs `npm run lint`, runs `npm test`, and creates the demo output file in `dist/demo-output.json`.
-4. The workflow uploads the generated artifact so the team can inspect the output directly from the Actions run.
-5. The Docker CI workflow builds the image and runs it locally to provide a quick smoke test.
-6. If all steps succeed, the pull request can be merged or the push can proceed to the next delivery stage.
-7. The Docker deploy workflow can log in to Docker Hub using GitHub secrets and push the image to a private or public registry namespace.
+3. The workflow checks out the repository, sets up multiple Node.js versions, installs dependencies with `npm ci`, runs `npm run lint`, runs `npm test`, generates the build output file in `dist/demo-output.json`, builds the container image, and runs a Docker smoke test.
+4. If all steps succeed, the pull request can be merged or the push can proceed to the next delivery stage.
+5. The deploy workflow can listen for a successful CI run and authenticate to Docker Hub to push the image to the registry namespace.
 
 ## What GitHub Actions does here
 
-GitHub Actions is the automation engine that watches repository events such as `push`, `pull_request`, `workflow_run`, and manual triggers. In this demo, it runs a Node.js matrix CI test, creates a reproducible build artifact, uploads that artifact, builds a Docker image, runs a smoke test inside the container, and then triggers a Docker registry workflow that can push an image to Docker Hub.
+GitHub Actions is the automation engine that watches repository events such as `push`, `pull_request`, `workflow_run`, and manual triggers. In this demo, it runs a Node.js matrix CI test, creates a reproducible build artifact, runs the container build and smoke test, and then triggers a Docker registry workflow that can push an image to Docker Hub.
 
 ## CI/CD flow diagram
 
@@ -90,21 +88,19 @@ flowchart LR
     F --> G[Test Suite]
     G --> H[Build demo output]
     H --> I[Upload dist/demo-output.json artifact]
-    I --> J[Docker CI Workflow]
-    J --> K[Build Docker image]
-    K --> L[Run container smoke test]
-    L --> M[Docker Deploy Workflow]
-    M --> N[Docker Hub login and image push]
+    I --> J[Build Docker image]
+    J --> K[Run container smoke test]
+    K --> L[Docker Deploy Workflow]
+    L --> M[Docker Hub login and image push]
 ```
 
 ## How students can read this repo
 
 1. Start with the app in `src/index.js` and `src/calc.js`.
 2. Read the test file in `test/calc.test.js`.
-3. Open the source CI workflow in `.github/workflows/ci.yml`.
-4. Open the Docker CI workflow in `.github/workflows/docker-ci.yml`.
-5. Open the Docker Hub image workflow in `.github/workflows/docker-deploy.yml`.
-6. Run `npm test`, `npm run lint`, `npm run build`, and `docker build` locally before pushing code.
+3. Open the CI workflow in `.github/workflows/ci.yml`.
+4. Open the deploy workflow in `.github/workflows/deploy.yml`.
+5. Run `npm test`, `npm run lint`, `npm run build`, and `docker build` locally before pushing code.
 
 ## Concepts this repo demonstrates
 
