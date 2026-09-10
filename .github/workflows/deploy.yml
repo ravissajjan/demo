@@ -1,0 +1,30 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy demo application
+        run: |
+          echo "Deployment would run here."
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "Version: ${{ github.event.workflow_run.head_sha }}"
+          else
+            echo "Version: ${{ github.sha }}"
+          fi
+          echo "Environment: production"

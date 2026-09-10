@@ -1,0 +1,18 @@
+{
+  "name": "cicd-demo",
+  "version": "1.0.0",
+  "description": "A simple CI/CD demo using GitHub Actions and Node.js.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "lint": "node --check src/index.js && node --check src/calc.js && node --check test/calc.test.js"
+  },
+  "keywords": [
+    "cicd",
+    "github-actions",
+    "demo"
+  ],
+  "license": "MIT"
+}
