@@ -31,15 +31,15 @@ The main CI workflow runs on pushes and pull requests to the `main` branch. It i
 
 The Docker workflow runs the same source validation and then builds a Docker image locally with `docker build`. It also runs a smoke test using `docker run`.
 
-The deployment workflows use `workflow_run` to trigger after a successful CI workflow result and also allow `workflow_dispatch` for manual deployment. In a real project it would deploy to a hosting provider or package registry. For the Docker example, the deployment workflow demonstrates a Docker Hub login and image push using a GitHub repository variable for the username and a repository secret for the Docker Hub access token.
+The deployment workflows use `workflow_run` to trigger after a successful CI workflow result and also allow `workflow_dispatch` for manual deployment. In a real project it would deploy to a hosting provider or package registry. For the Docker example, the deployment workflow demonstrates a Docker Hub login and image push using GitHub repository secrets for both the username and the Docker Hub access token.
 
 ### Docker Hub configuration
 
-Create a GitHub repository variable named `DOCKERHUB_USERNAME` and set it to your Docker Hub username, such as `connectwithravi`.
+Create a GitHub repository secret named `DOCKERHUB_USERNAME` and set it to your Docker Hub username, such as `connectwithravi`.
 
 Create a GitHub repository secret named `DOCKERHUB_TOKEN` and store a valid Docker Hub access token generated from the same Docker Hub account. The token should never be committed in the repository files.
 
-The push target image becomes `connectwithravi/cicd-demo:latest` if the `DOCKERHUB_USERNAME` variable is set to `connectwithravi`.
+The push target image becomes `connectwithravi/cicd-demo:latest` if the `DOCKERHUB_USERNAME` secret is set to `connectwithravi`.
 
 ### How to generate a Docker Hub token
 
@@ -50,7 +50,7 @@ The push target image becomes `connectwithravi/cicd-demo:latest` if the `DOCKERH
 5. Copy the generated token value and save it securely.
 6. In the GitHub repository, go to `Settings → Secrets and variables → Actions`.
 7. Create or update the repository secret `DOCKERHUB_TOKEN` with the copied value.
-8. Create or update the repository variable `DOCKERHUB_USERNAME` with your Docker Hub username.
+8. Create or update the repository secret `DOCKERHUB_USERNAME` with your Docker Hub username.
 
 Use an access token instead of your Docker Hub password. Access tokens are safer because they can be revoked independently and are meant for automation systems such as GitHub Actions.
 
