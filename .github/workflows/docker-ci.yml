@@ -1,0 +1,39 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint project files
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build demo image
+        run: docker build -t cicd-demo:latest .
+
+      - name: Smoke test image
+        run: docker run --rm cicd-demo:latest
