@@ -54,6 +54,16 @@ The push target image becomes `connectwithravi/cicd-demo:latest` if the `DOCKERH
 
 Use an access token instead of your Docker Hub password. Access tokens are safer because they can be revoked independently and are meant for automation systems such as GitHub Actions.
 
+### What are CVEs?
+
+A CVE is a Common Vulnerabilities and Exposures record. It is a standard way to identify a known software security issue. For example, a package inside a container image can have a CVE that means the package version is known to have a specific weakness.
+
+Image security tools such as Docker Scout can scan a built container and point to the package versions and CVEs found in that image. This helps teams understand what is vulnerable and where it came from before the image is deployed.
+
+### Optional: enable Docker Scout image analysis
+
+The GitHub Actions workflow can push the image to Docker Hub successfully, but the Docker Hub image analysis feature is a separate registry setting. In Docker Hub, go to the repository or namespace security settings and enable Docker Scout image analysis or the image security insights view. If the image security insight settings show `None`, then the registry has not enabled Scout scoring for that image.
+
 ## What happens when code changes are merged?
 
 1. A contributor opens a pull request or pushes code to `main`.
